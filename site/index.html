@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audio Market Radar</title>
+<meta name="description" content="Where AI labs are shipping audio models, where commercially licensed speech data is thin, and what changed this week. Built from live Hugging Face data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Besley:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231a1a19'/><g fill='%232d62ff'><rect x='6' y='13' width='3' height='6' rx='1.5'/><rect x='11' y='9' width='3' height='14' rx='1.5'/><rect x='16' y='5' width='3' height='22' rx='1.5'/><rect x='21' y='11' width='3' height='10' rx='1.5'/></g></svg>">
+<style>
+:root{
+  --bg:#f9f9f6; --surface:#ffffff; --sunk:#f1f2ea; --line:#e4e5dc; --line-strong:#cfd0c8;
+  --ink:#1a1a19; --ink-2:#686963; --ink-3:#82837c;
+  --blue:#2d62ff; --blue-light:#d9e5ff; --blue-dark:#080331; --pink:#dd23bb; --pink-light:#ffaefe;
+  --heat-0:#f1f2ea; --heat-1:#d9e5ff; --heat-2:#a9c0ff; --heat-3:#6f93ff; --heat-4:#2d62ff;
+  --serif:"Besley",Georgia,serif; --sans:"Inter",system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121211; --surface:#1a1a19; --sunk:#222221; --line:#2e2e2c; --line-strong:#444;
+  --ink:#f1f2ea; --ink-2:#b4b5ad; --ink-3:#9c9e94;
+  --blue:#6f93ff; --blue-light:#16224a; --pink:#ff6fe0; --pink-light:#3c043b;
+  --heat-0:#222221; --heat-1:#17234a; --heat-2:#20398a; --heat-3:#2d62ff; --heat-4:#8eaaff;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#121211; --surface:#1a1a19; --sunk:#222221; --line:#2e2e2c; --line-strong:#444;
+  --ink:#f1f2ea; --ink-2:#b4b5ad; --ink-3:#9c9e94;
+  --blue:#6f93ff; --blue-light:#16224a; --pink:#ff6fe0; --pink-light:#3c043b;
+  --heat-0:#222221; --heat-1:#17234a; --heat-2:#20398a; --heat-3:#2d62ff; --heat-4:#8eaaff;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+header.top{border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.01em}
+.brand svg{flex:none}
+.meta{color:var(--ink-3);font-size:13px;text-align:right}
+.hero{padding:56px 0 32px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,5vw,56px);line-height:1.08;letter-spacing:-.02em;margin:12px 0 16px;max-width:17ch}
+h1 em{font-style:italic;color:var(--blue)}
+.lede{font-size:17px;color:var(--ink-2);max-width:62ch;margin:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:32px 0 0}
+.stat{background:var(--surface);padding:18px 20px}
+.stat b{display:block;font-family:var(--serif);font-weight:500;font-size:30px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--ink-2)}
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-top:40px}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+nav.tabs button{appearance:none;border:0;background:none;font:500 14px var(--sans);color:var(--ink-2);padding:16px 14px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--blue)}
+nav.tabs button:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+section.view{padding:40px 0 72px}
+section.view[hidden]{display:none}
+h2{font-family:var(--serif);font-weight:400;font-size:30px;letter-spacing:-.015em;margin:0 0 8px}
+h3{font-family:var(--serif);font-weight:500;font-size:20px;margin:0}
+.sub{color:var(--ink-2);margin:0 0 28px;max-width:70ch}
+.pill{display:inline-block;font-size:12px;font-weight:500;padding:2px 9px;border-radius:999px;background:var(--sunk);color:var(--ink-2);border:1px solid var(--line)}
+.pill.asr{background:var(--blue-light);color:var(--blue);border-color:transparent}
+.pill.tts{background:color-mix(in srgb,var(--pink) 14%,transparent);color:var(--pink);border-color:transparent}
+.pill.ok{background:#cef5ca;color:#114e0b;border-color:transparent}
+.gaps{display:grid;gap:12px;counter-reset:g}
+.gap{display:grid;grid-template-columns:44px 1fr 220px;gap:20px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.gap .rank{font-family:var(--serif);font-size:28px;color:var(--ink-3);line-height:1}
+.gap .title{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.gap p{margin:4px 0;color:var(--ink-2);font-size:14px}
+.gap p strong{color:var(--ink);font-weight:500}
+.gap .build{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--sunk);font-size:14px;color:var(--ink)}
+.gap .build b{font-weight:600}
+.dsbar{font-size:12px;color:var(--ink-3)}
+.dsbar .row{display:flex;justify-content:space-between;margin-bottom:4px}
+.track{height:8px;border-radius:4px;background:var(--sunk);overflow:hidden;margin-bottom:10px}
+.track i{display:block;height:100%;border-radius:4px}
+.score{font-family:var(--serif);font-size:26px;color:var(--ink);font-variant-numeric:tabular-nums}
+.heat-wrap{margin-top:56px}
+table.heat{width:100%;border-collapse:separate;border-spacing:4px;font-size:13px}
+table.heat th{font-weight:500;color:var(--ink-2);text-align:left;padding:4px 8px}
+table.heat td{border-radius:8px;padding:8px 10px;vertical-align:middle;font-variant-numeric:tabular-nums;cursor:default}
+table.heat td.lang{font-weight:500;padding-left:0;white-space:nowrap}
+table.heat td.c .v{font-weight:600}
+table.heat td.c .d{font-size:11px;opacity:.75}
+table.heat td.dark{color:#fff}
+.legend{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3);margin:12px 0}
+.legend i{width:22px;height:12px;border-radius:3px;display:inline-block}
+.briefs{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.brief{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.brief.quiet{opacity:.72}
+.brief header{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.brief .handle{font-size:12px;color:var(--ink-3)}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kv div{background:var(--sunk);border-radius:10px;padding:8px 10px}
+.kv b{display:block;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.kv span{font-size:11px;color:var(--ink-3)}
+.label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:500;margin-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.mix{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--sunk);margin:2px 0 6px}
+.mix i{display:block;height:100%}
+ul.plain{list-style:none;padding:0;margin:0;font-size:13px}
+ul.plain li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px dashed var(--line)}
+ul.plain li:last-child{border-bottom:0}
+ul.plain li a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+ul.plain li span{color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.filter{display:flex;gap:8px;margin:0 0 20px;flex-wrap:wrap}
+.filter button{appearance:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);font:500 13px var(--sans);padding:6px 12px;border-radius:999px;cursor:pointer}
+.filter button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.week-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.card h3{margin-bottom:12px}
+.empty{color:var(--ink-3);font-size:14px}
+.callout{border-left:3px solid var(--blue);background:var(--surface);padding:14px 18px;border-radius:0 10px 10px 0;margin:0 0 24px;font-size:14px;color:var(--ink-2)}
+.method{max-width:72ch}
+.method h3{margin:28px 0 8px}
+.method p,.method li{color:var(--ink-2)}
+.method code{font-size:13px;background:var(--sunk);padding:1px 5px;border-radius:4px}
+footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--ink-3);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:8px 10px;border-radius:8px;max-width:280px;z-index:20;opacity:0;transition:opacity .1s}
+@media (max-width:820px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .gap{grid-template-columns:32px 1fr}
+  .gap .side{grid-column:2}
+  .week-grid{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  .wrap{padding:0 16px}
+  .hero{padding:36px 0 20px}
+  .meta{display:none}
+  .briefs{grid-template-columns:1fr}
+  .gap{padding:16px;gap:12px}
+  table.heat td.c .d{display:none}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><rect x="4" y="13" width="3.5" height="6" rx="1.75"/><rect x="10" y="8" width="3.5" height="16" rx="1.75"/><rect x="16" y="4" width="3.5" height="24" rx="1.75" fill="var(--blue)"/><rect x="22" y="10" width="3.5" height="12" rx="1.75"/></g></svg>
+    Audio Market Radar
+  </div>
+  <div class="meta" id="meta">Loading…</div>
+</div></header>
+
+<div class="wrap hero">
+  <div class="eyebrow">Live Hugging Face data · refreshed daily</div>
+  <h1>Where labs ship audio, and where <em>licensed data</em> runs thin.</h1>
+  <p class="lede">Every speech model released by 32 watched labs and research groups, set against every commercially usable speech dataset on Hugging Face. The gap is the ratio between the two.</p>
+  <div class="stats" id="stats"></div>
+</div>
+
+<nav class="tabs" aria-label="Views"><div class="wrap" role="tablist">
+  <button role="tab" aria-selected="true" data-view="gaps">Gap map</button>
+  <button role="tab" aria-selected="false" data-view="labs">Lab briefs</button>
+  <button role="tab" aria-selected="false" data-view="week">This week</button>
+  <button role="tab" aria-selected="false" data-view="method">Method &amp; limits</button>
+</div></nav>
+
+<main class="wrap">
+  <section class="view" id="v-gaps">
+    <h2>Top 10 data gaps</h2>
+    <p class="sub">Language and task pairs where at least two watched labs shipped models in the last 12 months, ranked by demand relative to commercially licensed supply. Languages driven by exactly the same releases are grouped into one entry.</p>
+    <div class="gaps" id="gaps"></div>
+    <div class="heat-wrap">
+      <h2>The full grid</h2>
+      <p class="sub">The 30 languages with the most lab demand. Darker means a bigger gap. Hover a cell for the numbers behind it.</p>
+      <div class="legend" id="legend"></div>
+      <div style="overflow-x:auto"><table class="heat" id="heat"></table></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-labs" hidden>
+    <h2>Lab briefs</h2>
+    <p class="sub">One card per watched lab: what they've released, how fast, in which languages, and which gaps from the map their releases point to.</p>
+    <div class="filter" id="labfilter">
+      <button aria-pressed="true" data-f="active">Shipped in last 12 months</button>
+      <button aria-pressed="false" data-f="all">All watched labs</button>
+    </div>
+    <div class="briefs" id="briefs"></div>
+  </section>
+
+  <section class="view" id="v-week" hidden>
+    <h2>This week</h2>
+    <p class="sub" id="weeksub"></p>
+    <div id="diff"></div>
+    <div class="week-grid">
+      <div class="card"><h3>New lab models</h3><div id="wk-models"></div></div>
+      <div class="card"><h3>New speech datasets</h3><div id="wk-sets"></div></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h3>Popular datasets updated this week</h3><div id="wk-upd"></div></div>
+  </section>
+
+  <section class="view method" id="v-method" hidden>
+    <h2>Method &amp; limits</h2>
+    <h3>Demand</h3>
+    <p>Every model from the watchlist with an audio pipeline tag, created in the last 12 months. Each model adds <code>1 + log10(1 + downloads)</code> to each language it's tagged with, divided by the square root of its language count so a 100-language checkpoint doesn't swamp targeted releases. Speech recognition demand includes <code>automatic-speech-recognition</code> and <code>audio-text-to-text</code> (audio LLMs); synthesis demand is <code>text-to-speech</code>. Downloads are Hugging Face's trailing 30-day count.</p>
+    <h3>Supply</h3>
+    <p>Every dataset tagged <code>task_categories:automatic-speech-recognition</code> or <code>text-to-speech</code> with a commercially usable licence (CC0, CC-BY, CC-BY-SA, Apache-2.0, MIT, ODC-BY, PDDL, BSD), weighted by its size category from 1 (under 1K rows) to 7 (100M–1B rows). Sizes above 1B rows are nearly always wrong tags, so they count as 1. Non-commercial, no-derivatives, research-only, "other" and missing licences are excluded. Datasets with fewer than 10 downloads and no likes are treated as placeholders and skipped.</p>
+    <h3>Gap score</h3>
+    <p><code>100 × demand ÷ (1 + supply)</code>. The top 10 only includes pairs with releases from at least two watched labs.</p>
+    <h3>Watchlist</h3>
+    <p id="watchlist"></p>
+    <h3>Limits</h3>
+    <ul>
+      <li><strong>Open releases only.</strong> Closed labs show up only through what they publish openly. OpenAI’s last open audio model on Hugging Face is Whisper large-v3-turbo (Oct 2024), and closed-only providers such as ElevenLabs don’t appear at all.</li>
+      <li><strong>Licence and size tags are self-reported</strong> by uploaders and are sometimes wrong. A CC-BY tag on a dataset of scraped audio doesn't make it clean to train on.</li>
+      <li><strong>Language tags are optional.</strong> Many Meta and ESPnet releases carry none, so they count in the lab briefs but not the grid.</li>
+      <li><strong>Row counts aren't hours.</strong> Size categories count rows, not audio duration or speaker diversity.</li>
+    </ul>
+    <h3>Pipeline</h3>
+    <p>A GitHub Action runs <code>fetch.py</code> every day, writes <code>data.json</code> and a dated snapshot, and redeploys this page. The weekly diff compares today against the snapshot closest to seven days ago. Source on <a href="https://github.com/JakeM-R/audio-market-radar">GitHub</a>.</p>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <span>Built by Jake Makking-Robinson as part of an application to David AI.</span>
+  <span>Data: Hugging Face Hub API · Not affiliated with David AI.</span>
+</div></footer>
+<div class="tip" id="tip"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1).replace(/\.0$/,"")+"M" : n >= 1e3 ? (n/1e3).toFixed(1).replace(/\.0$/,"")+"k" : String(n);
+const date = s => s ? new Date(s).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}) : "–";
+const short = s => s ? new Date(s).toLocaleDateString("en-GB",{day:"numeric",month:"short"}) : "–";
+const TASK = {"automatic-speech-recognition":"ASR","text-to-speech":"TTS","audio-to-audio":"Audio→audio","audio-classification":"Classification","voice-activity-detection":"VAD / diarisation","audio-text-to-text":"Audio LLM","text-to-audio":"Text→audio"};
+const TASK_COLOR = {"automatic-speech-recognition":"var(--blue)","audio-text-to-text":"#6f93ff","text-to-speech":"var(--pink)","audio-to-audio":"#ffaefe","audio-classification":"#9c9e94","voice-activity-detection":"#cfd0c8","text-to-audio":"#3c043b"};
+const hf = id => `https://huggingface.co/${id}`;
+const hfd = id => `https://huggingface.co/datasets/${id}`;
+const pill = t => `<span class="pill ${t}">${t === "asr" ? "Speech recognition" : "Speech synthesis"}</span>`;
+
+fetch("data.json", {cache: "no-cache"}).then(r => r.json()).then(render).catch(e => {
+  $("#meta").textContent = "Couldn't load data.json";
+  console.error(e);
+});
+
+function render(d) {
+  $("#meta").textContent = "Updated " + date(d.generatedAt);
+  const s = d.stats;
+  $("#stats").innerHTML = [
+    [s.labModels12m, "lab audio models in the last 12 months"],
+    [Object.keys(d.watchlist).length, "watched labs and research groups"],
+    [fmt(s.datasets), "speech datasets on Hugging Face"],
+    [Math.round(100 * s.commercialDatasets / s.datasets) + "%", "carry a commercially usable licence"],
+  ].map(([b, t]) => `<div class="stat"><b>${b}</b><span>${t}</span></div>`).join("");
+
+  renderGaps(d); renderHeat(d); renderBriefs(d, "active"); renderWeek(d);
+  $("#watchlist").innerHTML = Object.entries(d.watchlist).map(([h, n]) => `<a href="${hf(h)}">${esc(n)}</a>`).join(", ") + ". Every handle checked on 13 Oct 2026; deepseek-ai, ByteDance-Seed and xiaomi were dropped because they have no audio models on Hugging Face.";
+
+  document.querySelectorAll("#labfilter button").forEach(b => b.onclick = () => {
+    document.querySelectorAll("#labfilter button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    renderBriefs(d, b.dataset.f);
+  });
+}
+
+function renderGaps(d) {
+  const maxD = Math.max(...d.topGaps.map(g => g.demand));
+  const maxS = Math.max(...d.topGaps.map(g => g.supply));
+  $("#gaps").innerHTML = d.topGaps.map((g, i) => `
+    <article class="gap">
+      <div class="rank">${i + 1}</div>
+      <div>
+        <div class="title"><h3>${esc(g.title)}</h3>${pill(g.task)}</div>
+        <p><strong>${g.nModels} models from ${g.nLabs} labs</strong> in the last 12 months: ${g.labs.map(esc).join(", ")}. Most used: ${g.topModels.map(m => `<a href="${hf(m.id)}">${esc(m.id.split("/")[1])}</a> (${fmt(m.downloads)}/mo)`).join(", ")}.</p>
+        <p><strong>${g.nCommercial} commercially licensed datasets</strong> out of ${g.nAnyLicence} in total${g.topDatasets.length ? `; largest: ${g.topDatasets.slice(0,2).map(t => `<a href="${hfd(t.id)}">${esc(t.id)}</a> (${esc(t.size || "size not stated")}, ${esc(t.license)})`).join(", ")}` : ""}.</p>
+        ${g.alsoLangs.length ? `<p>The same releases also cover ${g.alsoLangs.slice(0, 12).map(esc).join(", ")}${g.alsoLangs.length > 12 ? ` and ${g.alsoLangs.length - 12} more` : ""}, with similarly thin licensed supply.</p>` : ""}
+        <div class="build"><b>Build:</b> ${esc(g.build)}</div>
+      </div>
+      <div class="side dsbar">
+        <div class="row"><span>Gap score</span><span class="score">${g.gap}</span></div>
+        <div class="row"><span>Lab demand</span><span>${g.demand}</span></div>
+        <div class="track"><i style="width:${100 * g.demand / maxD}%;background:var(--blue)"></i></div>
+        <div class="row"><span>Licensed supply</span><span>${g.supply}</span></div>
+        <div class="track"><i style="width:${100 * g.supply / maxS}%;background:var(--ink-3)"></i></div>
+      </div>
+    </article>`).join("");
+}
+
+function renderHeat(d) {
+  const idx = {};
+  d.cells.forEach(c => idx[c.lang + "|" + c.task] = c);
+  const vals = d.cells.map(c => c.gap).sort((a, b) => a - b);
+  const q = p => vals[Math.floor(p * (vals.length - 1))];
+  const cuts = [q(.4), q(.7), q(.9)];
+  const lvl = v => cuts.filter(c => v > c).length + 1;
+  $("#legend").innerHTML = `Smaller gap ${[0,1,2,3,4].map(i => `<i style="background:var(--heat-${i})"></i>`).join("")} Bigger gap`;
+  const tasks = Object.keys(d.tasks);
+  $("#heat").innerHTML = `<thead><tr><th></th>${tasks.map(t => `<th>${esc(d.tasks[t])}</th>`).join("")}</tr></thead><tbody>` +
+    d.gridLangs.map(l => `<tr><td class="lang">${esc(l.name)}</td>${tasks.map(t => {
+      const c = idx[l.code + "|" + t];
+      if (!c) return `<td class="c" style="background:var(--heat-0);color:var(--ink-3)">no lab demand</td>`;
+      const v = lvl(c.gap);
+      return `<td class="c ${v >= 4 ? "dark" : ""}" style="background:var(--heat-${v})" data-k="${l.code}|${t}"><span class="v">${c.gap}</span> <span class="d">· ${c.nModels} models, ${c.nCommercial} licensed sets</span></td>`;
+    }).join("")}</tr>`).join("") + "</tbody>";
+  const tip = $("#tip");
+  $("#heat").onmousemove = e => {
+    const td = e.target.closest("td[data-k]");
+    if (!td) { tip.style.opacity = 0; return; }
+    const c = idx[td.dataset.k];
+    tip.innerHTML = `<b>${esc(c.langName)} · ${esc(d.tasks[c.task])}</b><br>Gap ${c.gap} · demand ${c.demand} · supply ${c.supply}<br>${c.nModels} models from ${c.nLabs} labs<br>${c.nCommercial} of ${c.nAnyLicence} datasets commercially licensed`;
+    tip.style.left = Math.min(e.clientX + 14, innerWidth - 300) + "px";
+    tip.style.top = e.clientY + 14 + "px";
+    tip.style.opacity = 1;
+  };
+  $("#heat").onmouseleave = () => tip.style.opacity = 0;
+}
+
+function renderBriefs(d, f) {
+  const list = f === "active" ? d.briefs.filter(b => b.last12m > 0) : d.briefs;
+  $("#briefs").innerHTML = list.map(b => {
+    const mixTotal = b.tasksAllTime.reduce((s, [, n]) => s + n, 0);
+    return `<article class="brief ${b.last12m ? "" : "quiet"}">
+      <header><h3>${esc(b.name)}</h3><a class="handle" href="${hf(b.org)}">${esc(b.org)}</a></header>
+      <div class="kv">
+        <div><b>${b.last12m}</b><span>models, last 12 mo</span></div>
+        <div><b>${b.perMonth}</b><span>per month</span></div>
+        <div><b>${fmt(b.downloads30d)}</b><span>downloads / 30d</span></div>
+      </div>
+      <div>
+        <div class="label">Task mix · all ${b.total} audio models</div>
+        <div class="mix">${b.tasksAllTime.map(([t, n]) => `<i title="${TASK[t] || t}: ${n}" style="width:${100 * n / mixTotal}%;background:${TASK_COLOR[t] || "#999"}"></i>`).join("")}</div>
+        <div class="chips">${b.tasksAllTime.map(([t, n]) => `<span class="pill">${TASK[t] || t} ${n}</span>`).join("")}</div>
+      </div>
+      ${b.langs.length ? `<div><div class="label">Languages, last 12 mo · ${b.nLangs} total</div><div class="chips">${b.langs.map(([l, n]) => `<span class="pill">${esc(l)} ${n}</span>`).join("")}</div></div>` : ""}
+      <div><div class="label">Latest releases · last on ${date(b.latest)}</div><ul class="plain">${(b.recentReleases.length ? b.recentReleases : b.top.slice(0, 2)).map(m => `<li><a href="${hf(m.id)}">${esc(m.id.split("/")[1])}</a><span>${short(m.createdAt)}</span></li>`).join("")}</ul></div>
+      <div><div class="label">Most used</div><ul class="plain">${b.top.slice(0, 3).map(m => `<li><a href="${hf(m.id)}">${esc(m.id.split("/")[1])}</a><span>${fmt(m.downloads)}/mo</span></li>`).join("")}</ul></div>
+      ${b.gaps.length ? `<div><div class="label">Gaps they'd likely buy into</div><div class="chips">${b.gaps.map(g => `<span class="pill ${g.task}">${esc(g.langName)} ${g.task.toUpperCase()}</span>`).join("")}</div></div>` : ""}
+    </article>`;
+  }).join("");
+}
+
+function renderWeek(d) {
+  const w = d.week;
+  $("#weeksub").textContent = `Everything created on Hugging Face between ${date(w.since)} and ${date(d.generatedAt)}, formatted as an input to a weekly business review.`;
+  if (w.diff) {
+    const moves = (w.diff.downloadMoves || []).filter(m => m.before).slice(0, 5);
+    $("#diff").innerHTML = `<div class="callout"><strong>Since the ${date(w.diff.baseline)} snapshot:</strong> ${w.diff.newModels.length} new lab audio models, ${w.diff.newDatasets} new speech datasets.${moves.length ? " Biggest 30-day download moves: " + moves.map(m => `${esc(m.org)} ${m.now >= m.before ? "+" : ""}${fmt(m.now - m.before)}`).join(", ") + "." : ""}</div>`;
+  } else {
+    $("#diff").innerHTML = `<div class="callout">First snapshot taken ${date(d.generatedAt)}. The daily job keeps a dated snapshot, so snapshot-to-snapshot diffs (new repos and download moves) appear here from the next run.</div>`;
+  }
+  const labs = Object.entries(w.labModels);
+  $("#wk-models").innerHTML = labs.length ? labs.map(([lab, ms]) => `<div class="label" style="margin-top:8px">${esc(lab)}</div><ul class="plain">${ms.map(m => `<li><a href="${hf(m.id)}">${esc(m.id.split("/")[1])}</a><span>${TASK[m.task] || m.task}${m.langs.length ? " · " + m.langs.join(", ") : ""} · ${short(m.createdAt)}</span></li>`).join("")}</ul>`).join("") : `<p class="empty">No watched lab released an audio model this week.</p>`;
+  $("#wk-sets").innerHTML = `<p style="margin:0 0 10px;color:var(--ink-2);font-size:14px">${w.nNewDatasets} new, of which <strong>${w.nNewCommercial}</strong> carry a commercial licence.</p><ul class="plain">${w.newDatasets.slice(0, 12).map(s => `<li><a href="${hfd(s.id)}">${esc(s.id)}</a><span>${s.commercial ? `<span class="pill ok">${esc(s.license)}</span>` : esc(s.license || "no licence")}${s.langs.length ? " · " + s.langs.slice(0, 3).join(", ") : ""}</span></li>`).join("")}</ul>`;
+  $("#wk-upd").innerHTML = w.updatedDatasets.length ? `<ul class="plain">${w.updatedDatasets.map(s => `<li><a href="${hfd(s.id)}">${esc(s.id)}</a><span>${esc(s.license || "no licence")} · ${fmt(s.downloads)}/mo · ${short(s.lastModified)}</span></li>`).join("")}</ul>` : `<p class="empty">None.</p>`;
+}
+
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+  document.querySelectorAll("section.view").forEach(v => v.hidden = v.id !== "v-" + b.dataset.view);
+  history.replaceState(null, "", "#" + b.dataset.view);
+});
+const fromHash = () => document.querySelector(`nav.tabs button[data-view="${location.hash.slice(1)}"]`)?.click();
+addEventListener("hashchange", fromHash);
+fromHash();
+</script>
+</body>
+</html>
